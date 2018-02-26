@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,6 +25,7 @@ import com.kshitijpatil.roboconanalytics.models.Note;
 
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.DATA;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.INDEX;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.NOTES;
 
 public class NoteActivity extends AppCompatActivity {
     private static final String TAG = "NoteActivity";
@@ -60,25 +60,53 @@ public class NoteActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        DatabaseReference matchRef = dataRef.child(type);
-        Query query = matchRef.orderByChild(INDEX).equalTo(index);
         super.onStart();
-        FirebaseRecyclerAdapter<Note, NoteViewholder> adapter =
+        DatabaseReference matchRef = dataRef.child(type);
+        Query query = matchRef.orderByChild(INDEX).equalTo(index).limitToFirst(1);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DatabaseReference singleRef = null;
+                for (DataSnapshot snapshot: dataSnapshot.getChildren()){
+                    singleRef = snapshot.getRef();
+                }
+                Query noteQuery = singleRef.child(NOTES).orderByKey();
+                FirebaseRecyclerAdapter<Note,NoteViewholder> adapter =
+                        new FirebaseRecyclerAdapter<Note, NoteViewholder>(
+                                Note.class,
+                                R.layout.row_note_view,
+                                NoteViewholder.class,
+                                noteQuery
+                        ) {
+                            @Override
+                            protected void populateViewHolder(NoteViewholder viewHolder, Note model, int position) {
+                                viewHolder.setNote(model.getNote());
+                            }
+                        };
+                recyclerNotes.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        /*FirebaseRecyclerAdapter<Note,NoteViewholder> adapter =
                 new FirebaseRecyclerAdapter<Note, NoteViewholder>(
                         Note.class,
                         R.layout.row_note_view,
                         NoteViewholder.class,
-                        query
+                        queryRef
                 ) {
                     @Override
                     protected void populateViewHolder(NoteViewholder viewHolder, Note model, int position) {
                         Log.d(TAG, "populateViewHolder: "+model.getNote());
                     }
                 };
+        recyclerNotes.setAdapter(adapter);*/
     }
 
     public void addNote(View view) {
-        Log.d(TAG, "addNote: ");
         if (!TextUtils.isEmpty(noteText.getText())){
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override

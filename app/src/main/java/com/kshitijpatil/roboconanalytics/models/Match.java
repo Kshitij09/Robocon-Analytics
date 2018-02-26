@@ -7,6 +7,9 @@ public class Match {
     long index;
     long timestamp;
     ArrayList<Note> notes;
+    public static final String OPEN = "open";
+    public static final String CLOSE = "closed";
+    String status;
 
     public Match() {
 
@@ -17,6 +20,7 @@ public class Match {
         this.timestamp = timestamp;
         this.institute = institute;
         notes = new ArrayList<>();
+        status = OPEN;
     }
 
     public ArrayList<Note> getNotes() {
