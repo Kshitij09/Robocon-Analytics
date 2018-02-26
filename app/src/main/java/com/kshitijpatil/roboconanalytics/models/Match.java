@@ -23,6 +23,8 @@ public class Match {
         return notes;
     }
     public void addNote(Note note){
+        if (notes == null)
+            notes = new ArrayList<>();
         notes.add(note);
     }
     public long getTimestamp() {
