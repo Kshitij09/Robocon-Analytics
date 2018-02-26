@@ -36,6 +36,11 @@
         <activity
             android:name=".subactivities.MatchMonitor"
             android:theme="@style/AppThemeNoActionbar" />
+        <activity
+            android:name=".subactivities.BrowseMatches"
+            android:label="@string/title_activity_browse_matches"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".subactivities.NoteActivity"></activity>
     </application>
 
 </manifest>

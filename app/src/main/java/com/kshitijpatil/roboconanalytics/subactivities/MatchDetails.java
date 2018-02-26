@@ -21,6 +21,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.kshitijpatil.roboconanalytics.R;
 import com.kshitijpatil.roboconanalytics.models.Institute;
+import com.kshitijpatil.roboconanalytics.models.Match;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
@@ -114,13 +115,16 @@ public class MatchDetails extends AppCompatActivity {
                         final String type = (tbMatchType.getValue() == 0) ? PRACTICE : REAL;
                         Institute institute = new Institute(name, index);
                         DatabaseReference newInstituteRef = newMatch.push();
-                        newInstituteRef.setValue(institute).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        long timestamp = System.currentTimeMillis();
+                        Match match = new Match(index,timestamp,institute);
+                        newInstituteRef.setValue(match).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 dialog.dismiss();
                                 Intent monitorIntent = new Intent(MatchDetails.this, MatchMonitor.class);
                                 monitorIntent.putExtra("index", index);
                                 monitorIntent.putExtra("type", type);
+                                monitorIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(monitorIntent);
                             }
                         });

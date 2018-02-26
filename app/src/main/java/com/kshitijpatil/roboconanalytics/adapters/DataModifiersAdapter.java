@@ -22,6 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.kshitijpatil.roboconanalytics.R;
 import com.kshitijpatil.roboconanalytics.models.DataModel;
 import com.kshitijpatil.roboconanalytics.models.Institute;
+import com.kshitijpatil.roboconanalytics.models.Match;
 
 import java.util.ArrayList;
 
@@ -102,14 +103,17 @@ public class DataModifiersAdapter extends ArrayAdapter<DataModel> {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //Log.d(TAG, "onDataChange: "+type+" "+index);
                 //Log.d(TAG, "onDataChange: "+dataSnapshot.getValue().toString());
-                DatabaseReference refInstitute = null;
+                DatabaseReference refMatch = null;
                 for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
-                    refInstitute = singleSnapshot.getRef();
+                    refMatch = singleSnapshot.getRef();
                 }
-                refInstitute.runTransaction(new Transaction.Handler() {
+                //DatabaseReference refInstitute = refMatch.child(INSTITUTE);
+                //Log.d(TAG, "onDataChange: "+refInstitute.toString());
+                refMatch.runTransaction(new Transaction.Handler() {
                     @Override
                     public Transaction.Result doTransaction(MutableData mutableData) {
-                        final Institute institute = mutableData.getValue(Institute.class);
+                        Match match = mutableData.getValue(Match.class);
+                        final Institute institute = match.getInstitute();
                         if (institute == null) {
                             return Transaction.success(mutableData);
                         }
@@ -152,14 +156,48 @@ public class DataModifiersAdapter extends ArrayAdapter<DataModel> {
                                     institute.calculatePassAccuracy();
                                     break;
                             }
+                        } else {
+                            switch (position) {
+                                case 0:
+                                    institute.decrementTZ1SuccessfulHits();
+                                    institute.decrementTZ1TotalHits();
+                                    institute.calculateTZ1Accuracy();
+                                    break;
+                                case 1:
+                                    institute.decrementTZ1TotalHits();
+                                    institute.calculateTZ1Accuracy();
+                                    break;
+                                case 2:
+                                    institute.decrementTZ2SuccessfulHits();
+                                    institute.decrementTZ2TotalHits();
+                                    institute.calculateTZ2Accuracy();
+                                    break;
+                                case 3:
+                                    institute.decrementTZ2TotalHits();
+                                    institute.calculateTZ2Accuracy();
+                                    break;
+                                case 4:
+                                    institute.decrementTZ3SuccessfulHits();
+                                    institute.decrementTZ3TotalHits();
+                                    institute.calculateTZ3Accuracy();
+                                    break;
+                                case 5:
+                                    institute.decrementTZ3TotalHits();
+                                    institute.calculateTZ3Accuracy();
+                                    break;
+                                case 6:
+                                    institute.decrementSuccessfulPass();
+                                    institute.decrementTotalPass();
+                                    institute.calculatePassAccuracy();
+                                    break;
+                                case 7:
+                                    institute.decrementTotalPass();
+                                    institute.calculatePassAccuracy();
+                                    break;
+                            }
                         }
-
-                        /*if (hit)
-                            institute.increamentTZ1SuccessfulHits();
-                        institute.increamentTZ1TotalHits();
-                        institute.calculateTZ1Accuracy();
-                        Log.d(TAG, "doTransaction: " + institute.getTz1_accuracy());*/
-                        mutableData.setValue(institute);
+                        Log.d(TAG, "doTransaction: " + institute.getTz1_accuracy());
+                        mutableData.setValue(match);
 
                         return Transaction.success(mutableData);
                     }

@@ -57,10 +57,10 @@ public class CustomDialogClass extends Dialog implements View.OnClickListener {
                 }
                 break;
             case R.id.button_cancel:
-                dismiss();
+                cancel();
                 break;
         }
-        dismiss();
+        cancel();
     }
 
     private void addToDatabase(final String name) {

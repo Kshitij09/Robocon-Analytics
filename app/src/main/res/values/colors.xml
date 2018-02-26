@@ -4,5 +4,11 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="accent_material_dark_1">#ff4040</color>
+    <color name="colorRipple">#A9A9F5</color>
 
+    <color name="gray_06">#ffecf0f1</color>
+    <color name="gray_24">#ffbdc3c7</color>
+    <color name="gray_52">#ff7a7c7f</color>
+    <color name="gray_68">#ff525357</color>
+    <color name="gray_93">#ff292a30</color>
 </resources>

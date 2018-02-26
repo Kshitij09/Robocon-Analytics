@@ -11,5 +11,7 @@ public class FirebaseConstants {
         public static final String TEAMS = "teams";
         public static final String INDEX = "index";
         public static final String TYPE = "type";
+        public static final String INSTITUTE = "institute";
+        public static final String TIMESTAMP = "timestamp";
     }
 }

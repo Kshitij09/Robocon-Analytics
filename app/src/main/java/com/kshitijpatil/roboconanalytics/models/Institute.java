@@ -196,4 +196,38 @@ public class Institute {
         pass_accuracy = (successful_pass / total_pass) * 100;
     }
 
+    public void decrementTZ1SuccessfulHits(){
+        if (tz1_successful_hits > 0)
+            tz1_successful_hits -= 1;
+    }
+    public void decrementTZ1TotalHits(){
+        if (tz1_total_hits > 0)
+            tz1_total_hits -= 1;
+    }
+
+    public void decrementTZ2SuccessfulHits(){
+        if (tz2_successful_hits > 0)
+            tz2_successful_hits -= 1;
+    }
+    public void decrementTZ2TotalHits(){
+        if (tz2_total_hits > 0)
+            tz2_total_hits -= 1;
+    }
+    public void decrementTZ3SuccessfulHits(){
+        if (tz3_successful_hits > 0)
+            tz3_successful_hits -= 1;
+    }
+    public void decrementTZ3TotalHits(){
+        if (tz3_total_hits > 0)
+            tz3_total_hits -= 1;
+    }
+    public void decrementSuccessfulPass(){
+        if (successful_pass > 0)
+            successful_pass -= 1;
+    }
+    public void decrementTotalPass(){
+        if (total_pass > 0)
+        total_pass -= 1;
+    }
+
 }
