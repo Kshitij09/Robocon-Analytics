@@ -14,7 +14,7 @@
     <ListView
         android:id="@+id/list_controls"
         android:layout_width="368dp"
-        android:layout_height="326dp"
+        android:layout_height="319dp"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -26,13 +26,30 @@
         android:id="@+id/floatingActionButton3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         android:clickable="true"
         android:focusable="true"
         android:onClick="launchNote"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="@+id/bar_chart"
+        app:layout_constraintEnd_toStartOf="@+id/btn_stop"
+        app:layout_constraintTop_toTopOf="@+id/list_controls"
         app:srcCompat="@drawable/ic_note" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:onClick="endMatch"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/list_controls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bar_chart"
+        app:layout_constraintVertical_bias="0.704"
+        app:srcCompat="@drawable/ic_stop" />
 
 </android.support.constraint.ConstraintLayout>

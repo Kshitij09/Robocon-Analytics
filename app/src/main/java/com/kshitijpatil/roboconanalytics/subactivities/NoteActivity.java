@@ -120,6 +120,7 @@ public class NoteActivity extends AppCompatActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Match match = dataSnapshot.getValue(Match.class);
                             match.addNote(new Note(noteText.getText().toString()));
+                            noteText.setText("");
                             dataSnapshot.getRef().setValue(match);
                         }
 

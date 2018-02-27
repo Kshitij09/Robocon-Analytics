@@ -1,5 +1,7 @@
 package com.kshitijpatil.roboconanalytics.subactivities;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,8 +15,11 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,10 +33,12 @@ import com.kshitijpatil.roboconanalytics.models.DataModel;
 import com.kshitijpatil.roboconanalytics.models.Institute;
 import com.kshitijpatil.roboconanalytics.models.Match;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.DATA;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.INDEX;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.STATUS;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMS;
 
 public class MatchMonitor extends AppCompatActivity {
@@ -98,32 +105,19 @@ public class MatchMonitor extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
 
 
-                        BarEntry modifyEntry = null;
-                        modifyEntry = entries.get(0);
-                        float vals[] = {modifyEntry.getX(), institute.getTz1_accuracy()};
-                        modifyEntry.setVals(vals);
-                        chart.notifyDataSetChanged();
-                        chart.invalidate();
+                        entries.clear();
+                        float val = institute.getTz1_accuracy();
+                        entries.add(new BarEntry(1.0f,val));
+                        val = institute.getTz2_accuracy();
+                        entries.add(new BarEntry(2.0f,val));
+                        val = institute.getTz3_accuracy();
+                        entries.add(new BarEntry(3.0f,val));
+                        val = institute.getPass_accuracy();
+                        entries.add(new BarEntry(4.0f,val));
 
-                        BarEntry modifyEntry2 = entries.get(1);
-                        float vals2[] = {modifyEntry2.getX(), institute.getTz2_accuracy()};
-                        modifyEntry2.setVals(vals2);
-                        chart.notifyDataSetChanged();
-                        chart.invalidate();
-
-                        BarEntry modifyEntry3 = entries.get(2);
-                        float vals3[] = {modifyEntry3.getX(), institute.getTz3_accuracy()};
-                        modifyEntry2.setVals(vals3);
-                        chart.notifyDataSetChanged();
-                        chart.invalidate();
-
-                        BarEntry modifyEntry4 = entries.get(3);
-                        float vals4[] = {modifyEntry4.getX(), institute.getPass_accuracy()};
-                        modifyEntry2.setVals(vals4);
-                        chart.notifyDataSetChanged();
-                        chart.invalidate();
-
-                        chart.notifyDataSetChanged();
+                        set.setValues(entries);
+                        set.setLabel(institute.getName());
+                        set.notifyDataSetChanged();
                         chart.invalidate();
                     }
 
@@ -154,6 +148,7 @@ public class MatchMonitor extends AppCompatActivity {
         chart.setDrawValueAboveBar(true);
         chart.getDescription().setEnabled(false);
         chart.setPinchZoom(true);
+        chart.setMaxVisibleValueCount(100);
         chart.setHorizontalScrollBarEnabled(true);
 
         entries.add(new BarEntry(1.0f, 0f));
@@ -165,6 +160,8 @@ public class MatchMonitor extends AppCompatActivity {
         set.setColors(ColorTemplate.COLORFUL_COLORS);
         data = new BarData(set);
         data.setBarWidth(0.4f);
+        data.setValueTextSize(8);
+        data.setValueFormatter(new MyValueFormatter());
 
         String labels[] = new String[]{"", "TZ1", "TZ2", "TZ3", "Pass"};
 
@@ -218,9 +215,24 @@ public class MatchMonitor extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
 
 
-                BarEntry modifyEntry = null;
+                entries.clear();
+                float val = institute.getTz1_accuracy();
+                entries.add(new BarEntry(1.0f,val));
+                val = institute.getTz2_accuracy();
+                entries.add(new BarEntry(2.0f,val));
+                val = institute.getTz3_accuracy();
+                entries.add(new BarEntry(3.0f,val));
+                val = institute.getPass_accuracy();
+                entries.add(new BarEntry(4.0f,val));
+
+                set.setValues(entries);
+                set.setLabel(institute.getName());
+                set.notifyDataSetChanged();
+                chart.invalidate();
+                /*BarEntry modifyEntry = null;
                 modifyEntry = entries.get(0);
-                float vals[] = {modifyEntry.getX(), institute.getTz1_accuracy()};
+                BigDecimal accuracy = new BigDecimal(String.valueOf(institute.getTz1_accuracy()));
+                float vals[] = {modifyEntry.getX(), accuracy.floatValue()};
                 modifyEntry.setVals(vals);
                 chart.notifyDataSetChanged();
                 chart.invalidate();
@@ -244,7 +256,7 @@ public class MatchMonitor extends AppCompatActivity {
                 chart.invalidate();
 
                 chart.notifyDataSetChanged();
-                chart.invalidate();
+                chart.invalidate();*/
             }
 
             @Override
@@ -315,6 +327,56 @@ public class MatchMonitor extends AppCompatActivity {
         startActivity(noteIntent);
     }
 
+    public void endMatch(View view) {
+        AlertDialog dialog = createAlert(index);
+        dialog.show();
+    }
+    public AlertDialog createAlert(final long index){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_end)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, int id) {
+                        DatabaseReference matchRef = dataRef.child(type);
+                        Query query = matchRef.orderByChild(INDEX).equalTo(index);
+                        DatabaseReference queryRef = query.getRef();
+                        queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                DatabaseReference updateRef = null;
+                                for (DataSnapshot singleSnapshot: dataSnapshot.getChildren()){
+                                    updateRef = singleSnapshot.getRef();
+                                }
+                                updateRef.child(STATUS).setValue(Match.CLOSE);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        // Create the AlertDialog object and return it
+        return builder.create();
+    }
+    public class MyValueFormatter implements IValueFormatter {
+
+        private DecimalFormat mFormat;
+
+        public MyValueFormatter() {
+            mFormat = new DecimalFormat("###,###,##0.00"); // use one decimal
+        }
+
+        @Override
+        public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+            return mFormat.format(value) + " %";
+        }
+    }
     public class MyXAxisValueFormatter implements IAxisValueFormatter {
         private String[] mValues;
 
