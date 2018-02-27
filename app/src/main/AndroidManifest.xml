@@ -40,7 +40,8 @@
             android:name=".subactivities.BrowseMatches"
             android:label="@string/title_activity_browse_matches"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".subactivities.NoteActivity"></activity>
+        <activity android:name=".subactivities.NoteActivity" />
+        <activity android:name=".subactivities.TeamsList"></activity>
     </application>
 
 </manifest>

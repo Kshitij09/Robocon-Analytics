@@ -22,10 +22,12 @@ import com.kshitijpatil.roboconanalytics.R;
 import com.kshitijpatil.roboconanalytics.Utils;
 import com.kshitijpatil.roboconanalytics.models.Match;
 import com.kshitijpatil.roboconanalytics.models.Note;
+import com.kshitijpatil.roboconanalytics.models.Team;
 
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.DATA;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.INDEX;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.NOTES;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMS;
 
 public class NoteActivity extends AppCompatActivity {
     private static final String TAG = "NoteActivity";
@@ -33,6 +35,7 @@ public class NoteActivity extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference rootRef = database.getReference();
     DatabaseReference dataRef = rootRef.child(DATA);
+    DatabaseReference teamsRef = rootRef.child(TEAMS);
     DatabaseReference matchRef;
     Query query;
     String type;
@@ -118,12 +121,43 @@ public class NoteActivity extends AppCompatActivity {
                     matchRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            String note = noteText.getText().toString();
                             Match match = dataSnapshot.getValue(Match.class);
-                            match.addNote(new Note(noteText.getText().toString()));
+                            match.addNote(new Note(note));
                             noteText.setText("");
                             dataSnapshot.getRef().setValue(match);
+                            addToTeam(match.getInstitute().getName(),note);
                         }
+                        void addToTeam(String name, final String note){
+                            Query teamQuery = teamsRef.orderByKey().equalTo(name);
+                            teamQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    DatabaseReference teamRef = null;
+                                    for (DataSnapshot snapshot: dataSnapshot.getChildren()){
+                                        teamRef = snapshot.getRef();
+                                    }
+                                    teamRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            Team team = dataSnapshot.getValue(Team.class);
+                                            team.addNote(new Note(note));
+                                            dataSnapshot.getRef().setValue(team);
+                                        }
 
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
 

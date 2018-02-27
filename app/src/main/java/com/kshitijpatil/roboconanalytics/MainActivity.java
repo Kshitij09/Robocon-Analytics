@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_browse_matches:
                 startActivity(new Intent(MainActivity.this, BrowseMatches.class));
                 break;
+            case R.id.button_browse_teams:
         }
     }
 }

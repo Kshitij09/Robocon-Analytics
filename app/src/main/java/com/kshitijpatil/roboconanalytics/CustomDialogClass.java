@@ -18,9 +18,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.kshitijpatil.roboconanalytics.models.Institute;
+import com.kshitijpatil.roboconanalytics.models.Team;
 
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.DATA;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.PRACTICE;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.REAL;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMS;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMSDATA;
 
 public class CustomDialogClass extends Dialog implements View.OnClickListener {
     public Activity mActivity;
@@ -29,6 +33,7 @@ public class CustomDialogClass extends Dialog implements View.OnClickListener {
     DatabaseReference rootRef = database.getReference();
     DatabaseReference dataRef = rootRef.child(DATA);
     DatabaseReference teamsRef = rootRef.child(TEAMS);
+    DatabaseReference teamsDataRef = rootRef.child(TEAMSDATA);
     TextInputLayout textName;
 
     public CustomDialogClass(@NonNull Activity activity) {
@@ -69,15 +74,25 @@ public class CustomDialogClass extends Dialog implements View.OnClickListener {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.hasChild(name)) {
                     long index = dataSnapshot.getChildrenCount();
-                    Institute institute = new Institute(name, index);
-                    DatabaseReference newInstituteRef = teamsRef.child(institute.getName());
-                    newInstituteRef.setValue(institute).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            dismiss();
-                        }
-                    });
+                    //Institute institute = new Institute(name, index);
+                    Team team = new Team(name,index);
+                    DatabaseReference newInstituteRef = teamsRef.child(team.getName());
+                    newInstituteRef.setValue(team);
+                    addToTeamData(name,index);
                 }
+            }
+            private void addToTeamData(String name, long index) {
+                DatabaseReference newTeamRef = teamsDataRef.child(PRACTICE).child(name);
+                Institute institute = new Institute(name, index);
+                newTeamRef.setValue(institute);
+
+                DatabaseReference newTeamRef2 = teamsDataRef.child(REAL).child(name);
+                newTeamRef2.setValue(institute).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        dismiss();
+                    }
+                });
             }
 
             @Override
