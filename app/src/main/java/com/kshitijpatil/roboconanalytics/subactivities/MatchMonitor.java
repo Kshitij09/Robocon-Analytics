@@ -1,9 +1,12 @@
 package com.kshitijpatil.roboconanalytics.subactivities;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ListView;
@@ -20,6 +23,8 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -40,12 +45,14 @@ import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.DA
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.INDEX;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.STATUS;
 import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMS;
+import static com.kshitijpatil.roboconanalytics.FirebaseConstants.DBConstants.TEAMSDATA;
 
 public class MatchMonitor extends AppCompatActivity {
     public static final String TAG = "MatchMonitor";
     public DataModifiersAdapter adapter;
     ArrayList<DataModel> dataModels;
     ListView listControls;
+    ProgressDialog progressDialog;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference rootRef = database.getReference();
     DatabaseReference dataRef = rootRef.child(DATA);
@@ -56,12 +63,16 @@ public class MatchMonitor extends AppCompatActivity {
     ArrayList<BarEntry> entries = new ArrayList<>();
     BarDataSet set;
     BarData data;
+    FloatingActionButton btnEnd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match_monitor);
         listControls = findViewById(R.id.list_controls);
+        progressDialog = new ProgressDialog(MatchMonitor.this);
+        progressDialog.setMessage("Updating records...");
+        btnEnd = findViewById(R.id.btn_stop);
         initDataModels();
         initGraph();
         handleDataUpdates();
@@ -85,40 +96,46 @@ public class MatchMonitor extends AppCompatActivity {
                         Institute institute = match.getInstitute();
                         DataModel model = null;
 
-                        model = adapter.getItem(0);
-                        model.setValue(String.valueOf(institute.getTz1_successful_hits()));
-                        model = adapter.getItem(1);
-                        model.setValue(String.valueOf(institute.getTz1_total_hits()-institute.getTz1_successful_hits()));
-                        model = adapter.getItem(2);
-                        model.setValue(String.valueOf(institute.getTz2_successful_hits()));
-                        model = adapter.getItem(3);
-                        model.setValue(String.valueOf(institute.getTz2_total_hits()-institute.getTz2_successful_hits()));
-                        model = adapter.getItem(4);
-                        model.setValue(String.valueOf(institute.getTz3_successful_hits()));
-                        model = adapter.getItem(5);
-                        model.setValue(String.valueOf(institute.getTz3_total_hits()-institute.getTz3_successful_hits()));
-                        model = adapter.getItem(6);
-                        model.setValue(String.valueOf(institute.getSuccessful_pass()));
-                        model = adapter.getItem(7);
-                        model.setValue(String.valueOf(institute.getTotal_pass()-institute.getSuccessful_pass()));
-
-                        adapter.notifyDataSetChanged();
-
-
                         entries.clear();
                         float val = institute.getTz1_accuracy();
-                        entries.add(new BarEntry(1.0f,val));
+                        entries.add(new BarEntry(1.0f, val));
                         val = institute.getTz2_accuracy();
-                        entries.add(new BarEntry(2.0f,val));
+                        entries.add(new BarEntry(2.0f, val));
                         val = institute.getTz3_accuracy();
-                        entries.add(new BarEntry(3.0f,val));
+                        entries.add(new BarEntry(3.0f, val));
                         val = institute.getPass_accuracy();
-                        entries.add(new BarEntry(4.0f,val));
+                        entries.add(new BarEntry(4.0f, val));
 
                         set.setValues(entries);
                         set.setLabel(institute.getName());
                         set.notifyDataSetChanged();
                         chart.invalidate();
+
+                        if (match.getStatus().equals(Match.CLOSE)){
+                            listControls.setVisibility(View.INVISIBLE);
+                            btnEnd.setVisibility(View.INVISIBLE);
+                        }else {
+
+                            model = adapter.getItem(0);
+                            model.setValue(String.valueOf(institute.getTz1_successful_hits()));
+                            model = adapter.getItem(1);
+                            model.setValue(String.valueOf(institute.getTz1_total_hits() - institute.getTz1_successful_hits()));
+                            model = adapter.getItem(2);
+                            model.setValue(String.valueOf(institute.getTz2_successful_hits()));
+                            model = adapter.getItem(3);
+                            model.setValue(String.valueOf(institute.getTz2_total_hits() - institute.getTz2_successful_hits()));
+                            model = adapter.getItem(4);
+                            model.setValue(String.valueOf(institute.getTz3_successful_hits()));
+                            model = adapter.getItem(5);
+                            model.setValue(String.valueOf(institute.getTz3_total_hits() - institute.getTz3_successful_hits()));
+                            model = adapter.getItem(6);
+                            model.setValue(String.valueOf(institute.getSuccessful_pass()));
+                            model = adapter.getItem(7);
+                            model.setValue(String.valueOf(institute.getTotal_pass() - institute.getSuccessful_pass()));
+
+                            adapter.notifyDataSetChanged();
+
+                        }
                     }
 
                     @Override
@@ -336,17 +353,62 @@ public class MatchMonitor extends AppCompatActivity {
         builder.setMessage(R.string.confirm_end)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, int id) {
+                        progressDialog.show();
                         DatabaseReference matchRef = dataRef.child(type);
                         Query query = matchRef.orderByChild(INDEX).equalTo(index);
-                        DatabaseReference queryRef = query.getRef();
-                        queryRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        //DatabaseReference queryRef = query.getRef();
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 DatabaseReference updateRef = null;
+                                String name = null;
                                 for (DataSnapshot singleSnapshot: dataSnapshot.getChildren()){
+                                    Match match = singleSnapshot.getValue(Match.class);
+                                    name = match.getInstitute().getName();
                                     updateRef = singleSnapshot.getRef();
                                 }
                                 updateRef.child(STATUS).setValue(Match.CLOSE);
+                                updateAccuracies(name,type);
+                            }
+
+                            private void updateAccuracies(final String name, final String type) {
+                                DatabaseReference practiceRef = dataRef.child(type);
+                                practiceRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        ArrayList<Institute> listInstitutes = new ArrayList<>();
+                                        for (DataSnapshot singleSnapshot: dataSnapshot.getChildren()){
+                                            Match match = singleSnapshot.getValue(Match.class);
+                                            Institute institute = match.getInstitute();
+                                            if (institute.getName().equals(name))
+                                                listInstitutes.add(institute);
+                                        }
+                                        Institute avgInstitute = new Institute();
+                                        for (Institute institute: listInstitutes){
+                                            avgInstitute.setTz1_accuracy(avgInstitute.getTz1_accuracy()+institute.getTz1_accuracy());
+                                            avgInstitute.setTz2_accuracy(avgInstitute.getTz2_accuracy()+institute.getTz2_accuracy());
+                                            avgInstitute.setTz3_accuracy(avgInstitute.getTz3_accuracy()+institute.getTz3_accuracy());
+                                            avgInstitute.setPass_accuracy(avgInstitute.getPass_accuracy()+institute.getPass_accuracy());
+                                        }
+                                        avgInstitute.setTz1_accuracy(avgInstitute.getTz1_accuracy()/listInstitutes.size());
+                                        avgInstitute.setTz2_accuracy(avgInstitute.getTz2_accuracy()/listInstitutes.size());
+                                        avgInstitute.setTz3_accuracy(avgInstitute.getTz3_accuracy()/listInstitutes.size());
+                                        avgInstitute.setPass_accuracy(avgInstitute.getPass_accuracy()/listInstitutes.size());
+
+                                        DatabaseReference teamsDataRef = rootRef.child(TEAMSDATA).child(type).child(name);
+                                        teamsDataRef.setValue(avgInstitute).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                progressDialog.dismiss();
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
                             }
 
                             @Override

@@ -17,6 +17,18 @@ public class Institute {
     float pass_accuracy;
 
     public Institute() {
+        tz1_successful_hits = 0.0f;
+        tz1_total_hits = 0.0f;
+        tz1_accuracy = 0.0f;
+        tz2_successful_hits = 0.0f;
+        tz2_total_hits = 0.0f;
+        tz2_accuracy = 0.0f;
+        tz3_successful_hits = 0.0f;
+        tz3_total_hits = 0.0f;
+        tz3_accuracy = 0.0f;
+        successful_pass = 0.0f;
+        total_pass = 0.0f;
+        pass_accuracy = 0.0f;
     }
 
     public Institute(String name, long index) {
