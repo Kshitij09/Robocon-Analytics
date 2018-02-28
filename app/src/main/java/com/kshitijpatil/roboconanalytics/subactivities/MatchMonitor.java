@@ -111,7 +111,8 @@ public class MatchMonitor extends AppCompatActivity {
                         set.notifyDataSetChanged();
                         chart.invalidate();
 
-                        if (match.getStatus().equals(Match.CLOSE)){
+                        String status = (dataSnapshot.hasChild(STATUS)) ? (match.getStatus()) : Match.OPEN;
+                        if (status.equals(Match.CLOSE)){
                             listControls.setVisibility(View.INVISIBLE);
                             btnEnd.setVisibility(View.INVISIBLE);
                         }else {

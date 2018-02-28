@@ -42,7 +42,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".subactivities.NoteActivity" />
         <activity android:name=".subactivities.TeamsList" />
-        <activity android:name=".subactivities.TeamActivity"></activity>
+        <activity android:name=".subactivities.TeamActivity"/>
     </application>
 
 </manifest>

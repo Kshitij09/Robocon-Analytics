@@ -16,14 +16,16 @@ public class SplashActivity extends AppCompatActivity {
     public static final int RC_SIGN_IN = 111;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     Snackbar snackbar;
+    Intent mainIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
+        mainIntent = new Intent(SplashActivity.this, MainActivity.class);
+        mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (auth.getCurrentUser() != null) {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            startActivity(mainIntent);
         } else {
             startActivityForResult(
                     AuthUI.getInstance()
@@ -45,7 +47,7 @@ public class SplashActivity extends AppCompatActivity {
 
             //Successfully signed in
             if (resultCode == RESULT_OK) {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                startActivity(mainIntent);
                 finish();
                 return;
             } else {

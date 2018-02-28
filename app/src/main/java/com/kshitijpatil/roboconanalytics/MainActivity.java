@@ -9,28 +9,36 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.kshitijpatil.roboconanalytics.dialogs.BioDialogClass;
+import com.kshitijpatil.roboconanalytics.dialogs.CustomDialogClass;
 import com.kshitijpatil.roboconanalytics.subactivities.BrowseMatches;
 import com.kshitijpatil.roboconanalytics.subactivities.MatchDetails;
 import com.kshitijpatil.roboconanalytics.subactivities.TeamsList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     CustomDialogClass customDialog;
+    BioDialogClass bioDialog;
     Button btnTrack,btnBrowse,btnTeam;
+    TextView nameText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         customDialog = new CustomDialogClass(MainActivity.this);
+        bioDialog = new BioDialogClass(MainActivity.this);
         btnTrack = findViewById(R.id.button_new_match);
         btnBrowse = findViewById(R.id.button_browse_matches);
         btnTeam = findViewById(R.id.button_browse_teams);
         btnTrack.setOnClickListener(this);
         btnBrowse.setOnClickListener(this);
         btnTeam.setOnClickListener(this);
+        nameText = findViewById(R.id.txt_name);
+        nameText.setOnClickListener(this);
     }
 
     public void addInstitute(View view) {
@@ -48,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_browse_teams:
                 startActivity(new Intent(MainActivity.this, TeamsList.class));
+                break;
+            case R.id.txt_name:
+                bioDialog.show();
                 break;
         }
     }
